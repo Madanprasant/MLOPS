@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MLOps Placement Predictor</title>
+    <!-- Google Fonts for Modern Typography -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Link to custom styles -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="blob blob-1"></div>
+    <div class="blob blob-2"></div>
+
+    <div class="container">
+        <header>
+            <div class="logo-container">
+                <svg class="logo-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/-2000/svg">
+                    <path d="M12 2L2 7L12 12L22 7L12 2Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M2 17L12 22L22 17" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M2 12L12 17L22 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                <h1>Placement Predictor</h1>
+            </div>
+            <p class="subtitle">Enter your academic details to instantly predict your placement chances using our MLOps powered model.</p>
+        </header>
+
+        <div class="main-content">
+            <form id="prediction-form" class="prediction-form">
+                <div class="form-group">
+                    <label for="cgpa">CGPA (0.0 - 10.0)</label>
+                    <div class="input-wrapper">
+                        <input type="number" id="cgpa" name="cgpa" step="0.01" min="0" max="10" placeholder="e.g. 8.5" required>
+                        <div class="focus-border"></div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="internships">Number of Internships</label>
+                    <div class="input-wrapper">
+                        <input type="number" id="internships" name="internships" step="1" min="0" placeholder="e.g. 2" required>
+                        <div class="focus-border"></div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="projects">Number of Projects</label>
+                    <div class="input-wrapper">
+                        <input type="number" id="projects" name="projects" step="1" min="0" placeholder="e.g. 4" required>
+                        <div class="focus-border"></div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="communication">Communication Skills (0.0 - 10.0)</label>
+                    <div class="input-wrapper">
+                        <input type="number" id="communication" name="communication" step="0.1" min="0" max="10" placeholder="e.g. 7.5" required>
+                        <div class="focus-border"></div>
+                    </div>
+                </div>
+
+                <button type="submit" id="submit-btn" class="submit-btn">
+                    <span class="btn-text">Predict Placement</span>
+                    <span class="btn-loader" style="display: none;">
+                        <svg viewBox="0 0 50 50" class="spinner">
+                            <circle cx="25" cy="25" r="20" fill="none" stroke-width="5"></circle>
+                        </svg>
+                    </span>
+                </button>
+            </form>
+
+            <div id="result-container" class="result-container hidden">
+                <div class="result-card">
+                    <div class="result-icon-wrapper">
+                        <!-- Icon injected via JS -->
+                        <div id="result-icon"></div>
+                    </div>
+                    <div class="result-content">
+                        <h3 id="result-title">Prediction Result</h3>
+                        <p id="result-message">Waiting for calculation...</p>
+                        <div class="probability-container hidden" id="prob-container">
+                            <div class="prob-label">
+                                <span>Confidence</span>
+                                <span id="prob-value">0%</span>
+                            </div>
+                            <div class="prob-bar-bg">
+                                <div class="prob-bar-fill" id="prob-fill"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div id="error-container" class="error-container hidden">
+                <p id="error-message">An error occurred.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Link to custom script -->
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>

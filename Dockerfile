@@ -2,10 +2,17 @@ FROM python:3.10-slim
 
 WORKDIR /app
 
-COPY . .
-
+# Install system deps (if needed) and python deps
+COPY requirements.txt ./
 RUN pip install --no-cache-dir -r requirements.txt
 
+# Copy project files
+COPY . /app
+
+# Expose port
 EXPOSE 5000
 
-CMD ["python", "app.py"]
+ENV FLASK_ENV=production
+
+# Run the Flask app with gunicorn for production
+CMD ["gunicorn", "--bind", "0.0.0.0:5000", "app:app"]

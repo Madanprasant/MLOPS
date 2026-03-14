@@ -1,70 +1,67 @@
-from flask import Flask, request, jsonify
-import pickle
 import os
+import pickle
+
+
+from flask import Flask, jsonify, request, render_template
+import numpy as np
+
+# Load model path
+MODEL_PATH = os.path.join(os.getcwd(), "model.pkl")
+
+
+def load_model(path):
+    if not os.path.exists(path):
+        raise FileNotFoundError(f"Model file not found at {path}. Run `train.py` first.")
+    with open(path, "rb") as f:
+        model = pickle.load(f)
+    return model
+
 
 app = Flask(__name__)
 
-# Load saved model.pkl at startup
-model = None
-MODEL_PATH = 'model.pkl'
+# Attempt to load the model at import/startup. If missing, `model` stays None and
+# the `/predict` endpoint will return an informative error.
+try:
+    model = load_model(MODEL_PATH)
+except FileNotFoundError:
+    model = None
 
-if os.path.exists(MODEL_PATH):
-    with open(MODEL_PATH, 'rb') as f:
-        model = pickle.load(f)
-    print("Model loaded successfully.")
-else:
-    print("Warning: model.pkl not found. Please run train.py first to generate the model.")
 
-@app.route('/', methods=['GET'])
+@app.route("/", methods=["GET"])
 def home():
-    """Home route - Health check endpoint."""
-    return jsonify({
-        "message": "Welcome to the Student Placement Prediction System API.",
-        "status": "Healthy",
-        "model_loaded": model is not None
-    })
+    return render_template("index.html")
 
-@app.route('/predict', methods=['POST'])
+
+@app.route("/predict", methods=["POST"])
 def predict():
-    """Predict endpoint - Accepts JSON input and returns prediction."""
-    if model is None:
-        return jsonify({"error": "Model object is not loaded. Please train the model first."}), 500
-        
-    try:
-        # Accept JSON input for cgpa, internships, projects, communication
-        data = request.get_json()
-        
-        if not data:
-            return jsonify({"error": "No JSON data provided."}), 400
-            
-        cgpa = float(data.get('cgpa', 0.0))
-        internships = int(data.get('internships', 0))
-        projects = int(data.get('projects', 0))
-        communication = int(data.get('communication', 0)) # binary or rating 1-5 depending on scale
-        
-        # Format for sklearn prediction
-        input_features = [[cgpa, internships, projects, communication]]
-        
-        # Return prediction as JSON response
-        prediction = model.predict(input_features)[0]
-        
-        return jsonify({
-            "input": {
-                "cgpa": cgpa,
-                "internships": internships,
-                "projects": projects,
-                "communication": communication
-            },
-            "prediction": int(prediction),
-            "result": "Placed" if int(prediction) == 1 else "Not Placed"
-        })
-        
-    except ValueError as ve:
-        return jsonify({"error": f"Invalid data format: {str(ve)}"}), 400
-    except Exception as e:
-        return jsonify({"error": f"An error occurred: {str(e)}"}), 500
+    data = request.get_json(force=True)
+    # Validate input
+    required = ["cgpa", "internships", "projects", "communication"]
+    if not all(k in data for k in required):
+        return (
+            jsonify({"error": f"Missing fields. Required: {required}"}),
+            400,
+        )
 
-if __name__ == '__main__':
-    # Ensure application runs on host 0.0.0.0 and port 5000 for cloud deployment
-    PORT = int(os.environ.get('PORT', 5000))
-    app.run(host='0.0.0.0', port=PORT, debug=True)
+    try:
+        features = [
+            float(data["cgpa"]),
+            int(data["internships"]),
+            int(data["projects"]),
+            float(data["communication"]),
+        ]
+    except Exception as e:
+        return jsonify({"error": "Invalid input types", "details": str(e)}), 400
+
+    arr = np.array(features).reshape(1, -1)
+    pred = int(model.predict(arr)[0])
+    prob = None
+    if hasattr(model, "predict_proba"):
+        prob = float(model.predict_proba(arr)[0, 1])
+
+    return jsonify({"prediction": pred, "probability": prob})
+
+
+if __name__ == "__main__":
+    # Ensure host/port are set for cloud deployment
+    app.run(host="0.0.0.0", port=5000)
