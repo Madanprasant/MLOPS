@@ -116,7 +116,29 @@ document.addEventListener('DOMContentLoaded', () => {
             resultIcon.parentElement.classList.add('icon-danger');
             resultTitle.textContent = "Needs Improvement";
             resultTitle.classList.add('text-danger');
-            resultMessage.textContent = "Focus on improving your skills, projects, or gaining more experience.";
+            
+            // Dynamic advice based on inputs
+            const cgpa = parseFloat(document.getElementById('cgpa').value);
+            const internships = parseInt(document.getElementById('internships').value);
+            const projects = parseInt(document.getElementById('projects').value);
+            const communication = parseFloat(document.getElementById('communication').value);
+            
+            const tips = [];
+            if (cgpa < 7.5) tips.push("improving your CGPA");
+            if (internships < 2) tips.push("gaining more internship experience");
+            if (projects < 3) tips.push("building more hands-on projects");
+            if (communication < 7.0) tips.push("sharpening your communication skills");
+            
+            if (tips.length > 0) {
+                const lastTip = tips.pop();
+                const tipString = tips.length > 0 
+                    ? `Focus on ${tips.join(', ')} and ${lastTip}.`
+                    : `Focus on ${lastTip}.`;
+                resultMessage.textContent = tipString;
+            } else {
+                resultMessage.textContent = "Focus on improving your skills and gaining more practical experience.";
+            }
+            
             probFill.classList.add('fill-danger');
         }
 
