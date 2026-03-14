@@ -29,8 +29,8 @@ def train(args):
         X, y, test_size=args.test_size, random_state=args.random_state
     )
 
-    # Create and train model
-    model = LogisticRegression(max_iter=args.max_iter)
+    # Create and train model with more regularization to avoid sharp probability jumps
+    model = LogisticRegression(max_iter=args.max_iter, C=0.01)
     model.fit(X_train, y_train)
 
     # Evaluate

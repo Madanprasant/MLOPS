@@ -93,7 +93,11 @@ document.addEventListener('DOMContentLoaded', () => {
         resultContainer.classList.remove('hidden');
         
         const isPlaced = data.prediction === 1;
-        const probability = data.probability !== null ? (data.probability * 100).toFixed(1) : null;
+        let displayProb = data.probability;
+        if (!isPlaced && displayProb !== null) {
+            displayProb = 1 - displayProb;
+        }
+        const probability = displayProb !== null ? (displayProb * 100).toFixed(1) : null;
 
         // Reset classes
         resultIcon.parentElement.className = 'result-icon-wrapper';
@@ -114,9 +118,6 @@ document.addEventListener('DOMContentLoaded', () => {
             resultTitle.classList.add('text-danger');
             resultMessage.textContent = "Focus on improving your skills, projects, or gaining more experience.";
             probFill.classList.add('fill-danger');
-            
-            // If the model provides probability for class 1 (placement), 
-            // and prediction is 0, the probability of class 1 is low.
         }
 
         if (probability !== null) {
