@@ -23,7 +23,8 @@ app = Flask(__name__)
 # the `/predict` endpoint will return an informative error.
 try:
     model = load_model(MODEL_PATH)
-except FileNotFoundError:
+except Exception as e:
+    print(f"Failed to load model: {e}")
     model = None
 
 
@@ -53,13 +54,19 @@ def predict():
     except Exception as e:
         return jsonify({"error": "Invalid input types", "details": str(e)}), 400
 
-    arr = np.array(features).reshape(1, -1)
-    pred = int(model.predict(arr)[0])
-    prob = None
-    if hasattr(model, "predict_proba"):
-        prob = float(model.predict_proba(arr)[0, 1])
+    if model is None:
+        return jsonify({"error": "Model is not loaded on the server. Please check server logs."}), 500
 
-    return jsonify({"prediction": pred, "probability": prob})
+    try:
+        arr = np.array(features).reshape(1, -1)
+        pred = int(model.predict(arr)[0])
+        prob = None
+        if hasattr(model, "predict_proba"):
+            prob = float(model.predict_proba(arr)[0, 1])
+
+        return jsonify({"prediction": pred, "probability": prob})
+    except Exception as e:
+        return jsonify({"error": "Prediction failed", "details": str(e)}), 500
 
 
 if __name__ == "__main__":

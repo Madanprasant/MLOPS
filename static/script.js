@@ -61,11 +61,18 @@ document.addEventListener('DOMContentLoaded', () => {
                 body: JSON.stringify(payload)
             });
 
-            const data = await response.json();
-
             if (!response.ok) {
-                throw new Error(data.error || 'Failed to get prediction');
+                let errorMessage = 'Failed to get prediction from server.';
+                try {
+                    const errorData = await response.json();
+                    errorMessage = errorData.error || errorMessage;
+                } catch (e) {
+                    errorMessage = `Server Error: ${response.status} ${response.statusText}. Please check the server logs.`;
+                }
+                throw new Error(errorMessage);
             }
+
+            const data = await response.json();
 
             // Artificial delay to show off the cool loader (optional, remove in prod)
             await new Promise(resolve => setTimeout(resolve, 800));
